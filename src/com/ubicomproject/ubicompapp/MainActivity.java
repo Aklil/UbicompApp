@@ -16,10 +16,16 @@ import android.widget.Button;
 //import android.view.View;
 //import android.view.ViewGroup;
 //import android.os.Build;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 
 public class MainActivity extends Activity {
 
-	
+	 // Declare RadioButtons
+    RadioGroup fanRadioGroup;
+    RadioButton fanOnRadio;
+    RadioButton fanOffRadio;
     Button startButton;
 	Button stopButton;
 	@Override
@@ -27,11 +33,28 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
         
+		//find radio buttons
+		fanRadioGroup = (RadioGroup) findViewById(R.id.fanRadioGroup);
+		fanOnRadio = (RadioButton) findViewById(R.id.fanOnRadio);
+		fanOnRadio = (RadioButton) findViewById(R.id.fanOffRadio);
 		//find the buttons
 		startButton = (Button) findViewById(R.id.startButton);
 		stopButton = (Button) findViewById(R.id.stopButton);
 		
-	
+		 //set up On or Off Radio button listener
+	     addChangeListenerToRadios();
+	     
+	    //action listener for the radio group 
+		fanRadioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				//start the async thread here 
+				//also should check the static variable which is set in service
+				
+			}
+		});
+	     
 		//action listeners for start button
 		startButton.setOnClickListener(new View.OnClickListener() {
 			
@@ -61,7 +84,11 @@ public class MainActivity extends Activity {
 			}
 		});
 	}
-
+   
+    private void addChangeListenerToRadios(){
+    	
+    }
+	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
@@ -77,7 +104,9 @@ public class MainActivity extends Activity {
 		
 
 	}
-
+   
+	
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 

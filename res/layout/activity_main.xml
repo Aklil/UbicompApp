@@ -25,5 +25,37 @@
         android:layout_marginTop="27dp"
         android:text="@string/stop_service" />
 
+    <RadioGroup
+        android:id="@+id/fanRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/fanOnRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/on_text" />
+
+        <RadioButton
+            android:id="@+id/fanOffRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/off_text" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/fanTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/fanRadioGroup"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="33dp"
+        android:text="@string/fan_text" />
+
 </RelativeLayout>
 
