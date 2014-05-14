@@ -9,4 +9,6 @@
     <string name="off_text">OFF</string>
     <string name="start_service">StartService</string>
 	<string name="stop_service">StopService</string>
+	
+	<string name="alert_button">Notification Seen </string>
 </resources>

@@ -10,7 +10,7 @@
 
     <Button
         android:id="@+id/startButton"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
@@ -18,7 +18,7 @@
 
     <Button
         android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/startButton"
         android:layout_centerHorizontal="true"
@@ -56,6 +56,16 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="33dp"
         android:text="@string/fan_text" />
+
+    <Button
+        android:id="@+id/alertButton"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="27dp"
+        android:text="@string/alert_button" 
+        android:background="@color/alert_color"/>
 
 </RelativeLayout>
 

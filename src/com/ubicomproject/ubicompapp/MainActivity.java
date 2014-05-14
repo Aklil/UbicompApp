@@ -3,15 +3,48 @@ package com.ubicomproject.ubicompapp;
 //import android.support.v7.app.ActionBarActivity;
 //import android.support.v7.app.ActionBar;
 //import android.support.v4.app.Fragment;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 //import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 //import android.view.View;
 //import android.view.ViewGroup;
@@ -19,39 +52,71 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	 // Declare RadioButtons
+	private String serverFanControlURL = "http://192.168.0.240/cgi-bin/gateway.py";
+	
+	private String FAN_CONTROL_STATUS = "OFF";
+	
+	public static boolean ACTIVITY_IS_ALIVE;
+	
+	private Context context;
+	
+	// Declare RadioButstons
     RadioGroup fanRadioGroup;
     RadioButton fanOnRadio;
     RadioButton fanOffRadio;
     Button startButton;
 	Button stopButton;
+	Button alertButton;
+	
+	CleanAlertReceiver cleanAlertReceiver;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		unlockScreen();
 		setContentView(R.layout.activity_main);
-        
+		context = this;
 		//find radio buttons
 		fanRadioGroup = (RadioGroup) findViewById(R.id.fanRadioGroup);
 		fanOnRadio = (RadioButton) findViewById(R.id.fanOnRadio);
-		fanOnRadio = (RadioButton) findViewById(R.id.fanOffRadio);
-		//find the buttons
+		fanOffRadio = (RadioButton) findViewById(R.id.fanOffRadio);
+		
 		startButton = (Button) findViewById(R.id.startButton);
 		stopButton = (Button) findViewById(R.id.stopButton);
+		alertButton = (Button) findViewById(R.id.alertButton);
+		
+		//hide alertButton 
+		if(!WebService.ALERT_STATUS){
+			alertButton.setVisibility(View.INVISIBLE);
+		}
+		
+		//registered alert receiver
+		cleanAlertReceiver = new CleanAlertReceiver();
+		IntentFilter intentFilter = new IntentFilter("CLEANING_TIME");
+		LocalBroadcastManager.getInstance(context).registerReceiver(cleanAlertReceiver, intentFilter);
 		
 		 //set up On or Off Radio button listener
-	     addChangeListenerToRadios();
+//	     addChangeListenerToRadios();
 	     
 	    //action listener for the radio group 
 		fanRadioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			
+			@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
 				//start the async thread here 
 				//also should check the static variable which is set in service
+				//FAN_CONTROL_STATUS = (fanOnRadio.isChecked())?"ON":"OFF";
+				FAN_CONTROL_STATUS = (fanOffRadio.isChecked())?"OFF":"ON";
+//				new FanControl().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+//				new FanControl().execute();
 				
+				//addChangeListenerToRadios();
 			}
 		});
 	     
@@ -83,30 +148,64 @@ public class MainActivity extends Activity {
 
 			}
 		});
+		
+		alertButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				//here stop the music player
+				//stop vibration 
+				//hide the button itself
+				
+				stopAlert();
+				
+			}
+		});
 	}
    
-    private void addChangeListenerToRadios(){
-    	
-    }
+
 	
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
+		//setting activity is alive
+		ACTIVITY_IS_ALIVE = true;
 		
-		//just checking
-		if(this.getIntent().getStringExtra("MessageFromService") !=null){
-			Log.i("MyLog","Service starting new Activity"+this.getIntent().getStringExtra("MessageFromService"));
-			
-			startButton.setBackgroundColor(Color.GREEN);
-		}
-			
-		
-
+//		//just checking
+//		if(this.getIntent().getStringExtra("MessageFromService") !=null){
+//			Log.i("MyLog","Service starting new Activity"+this.getIntent().getStringExtra("MessageFromService"));
+//			
+//			startButton.setBackgroundColor(Color.GREEN);
+//			alertButton.setVisibility(View.VISIBLE);
+//		}
 	}
    
 	
 	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		//stopAlert();
+		// setting activity alive to false
+		ACTIVITY_IS_ALIVE = false;
+		
+		LocalBroadcastManager.getInstance(context).unregisterReceiver(cleanAlertReceiver);
+
+	}
+
+    private void stopAlert(){
+    	//stop music and vibration
+		Intent intent = new Intent("STOP_ALERT");
+		intent.putExtra("ActivityLocalBroadcast", "Stop Alert");
+		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+		
+		alertButton.setVisibility(View.GONE);
+	    
+		//change the ALER_STATUS
+		
+		WebService.ALERT_STATUS = false;
+    }
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -126,6 +225,153 @@ public class MainActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+    private void unlockScreen(){
+    	Window window = this.getWindow();
+        window.addFlags(LayoutParams.FLAG_DISMISS_KEYGUARD);
+        window.addFlags(LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        window.addFlags(LayoutParams.FLAG_TURN_SCREEN_ON);
+    }
+	//Local Broadcast receiver from service this should be registered in the oncreate and unregistered in onpause
+	private class CleanAlertReceiver extends BroadcastReceiver{
 
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			//Actions to be done
+			Log.i("MyLog","ClearAlertReceiver in onReceive");
+			if(intent.getStringExtra("ServiceLocalBroadcast") !=null){
+				Log.i("MyLog","LocalBroadcast: "+intent.getStringExtra("ServiceLocalBroadcast"));
+				
+				startButton.setBackgroundColor(Color.GREEN);
+				alertButton.setVisibility(View.VISIBLE);
+//				unlockScreen();
+			   
+			}
+					
+		}
+		
+	}
+	
+	//http send radio button status
+	private class FanControl extends AsyncTask<String , String , String>{
+       
+		private ProgressDialog dialog;
+		@Override
+		protected void onPreExecute() {
+			
+			super.onPreExecute();
+//		    dialog = new ProgressDialog(context);
+//	        dialog.setCancelable(true);
+//            dialog.setMessage("setting..");
+//	        dialog.show();
+
+	              
+		}
+
+
+		@Override
+		protected String doInBackground(String... params) {
+
+			Log.i("MyLog","Trying to set Radio button status");
+			
+			//send	status to server
+			String result = SendFanControlMessage();
+			return result;
+		}
+		
+		
+		private String SendFanControlMessage(){
+			    String postResult = null;
+				try {
+				
+					Thread.sleep(1000);
+					
+					//name should correspond to db name
+					String fanControlMessage = FAN_CONTROL_STATUS;
+//					String data = URLEncoder.encode("fanControlMessage","UTF-8") +  URLEncoder.encode(fanControlMessage,"UTF-8");
+					
+					JSONObject jsonData = new JSONObject();	
+					jsonData.put("fanControlMessage", fanControlMessage);
+					jsonData.put("requestType", "FAN");
+					
+//					List<NameValuePair> data = new ArrayList<NameValuePair> ();
+//					
+//					data.add(new NameValuePair("fanControlMessage",fanControlMessage));
+//						
+						
+					DefaultHttpClient httpClient = new DefaultHttpClient(new BasicHttpParams());
+					//postmethod
+					HttpPost httpPost = new HttpPost(serverFanControlURL);
+					httpPost.setHeader("Content-type","application/json");
+					
+					httpPost.setEntity(new  StringEntity(jsonData.toString()));
+					//for json data??
+					
+					HttpResponse response = httpClient.execute(httpPost);
+				
+					// Get hold of the response entity (-> the data):
+					HttpEntity entity = response.getEntity();
+					Log.i("MyLog","Checking post response"+entity.toString());
+					//try reading 
+					InputStream inputStream = null;
+					String result = null;
+                    inputStream = entity.getContent();
+					
+					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,"UTF-8"));
+					
+					//manipulate the string 
+					StringBuilder stringBuilder = new StringBuilder();
+					String line = null;
+					
+					while((line = reader.readLine())!=null){
+						stringBuilder.append(line+"\n");
+					}
+					result = stringBuilder.toString();
+					if(inputStream != null)inputStream.close();
+					
+					JSONObject jsonObject;
+					
+					jsonObject = new JSONObject(result);
+					JSONObject statusJSONObject = jsonObject.getJSONObject("status");
+					//get the json string
+					String statusString = statusJSONObject.getString("fan");
+					
+					if(entity !=null){
+						postResult = statusString;
+						Log.i("MyLog","Checking result if entitiy is not null:---"+result);
+						Log.i("MyLog","Checking result if entitiy is not null:---"+statusString);
+					}else{
+						postResult ="error";
+						Log.i("MyLog","entitiy null");
+					}
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+				    
+					e.printStackTrace();
+				} catch (ClientProtocolException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+			return postResult;
+			
+		}
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			Log.i("MyLog","Checking result in onPostExecute"+result);
+			 Toast.makeText(context, result, Toast.LENGTH_LONG).show();
+//			 if(dialog.isShowing()){
+//	             dialog.cancel();
+//
+//			 }
+		}
+	}
 
 }
