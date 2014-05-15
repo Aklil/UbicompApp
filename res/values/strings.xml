@@ -10,5 +10,6 @@
     <string name="start_service">StartService</string>
 	<string name="stop_service">StopService</string>
 	
-	<string name="alert_button">Notification Seen </string>
+	<string name="alert_inactive_button">Waiting For Cleaning Time</string>
+	<string name="alert_active_button">Notification Seen </string>
 </resources>

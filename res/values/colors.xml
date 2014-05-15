@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="alert_color">#89ED69</color>
+    <color name="alert_inactive_color">#52524E</color>
+    <color name="alert_inactive_color_text">#000000</color>
+    <color name="alert_active_color">#89ED69</color>
+    <color name="alert_active_color_text">#ffffff</color>
 </resources>

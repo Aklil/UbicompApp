@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -25,7 +24,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -91,16 +90,14 @@ public class MainActivity extends Activity {
 		
 		//hide alertButton 
 		if(!WebService.ALERT_STATUS){
-			alertButton.setVisibility(View.INVISIBLE);
+//			alertButton.setVisibility(View.INVISIBLE);
 		}
 		
 		//registered alert receiver
 		cleanAlertReceiver = new CleanAlertReceiver();
-		IntentFilter intentFilter = new IntentFilter("CLEANING_TIME");
-		LocalBroadcastManager.getInstance(context).registerReceiver(cleanAlertReceiver, intentFilter);
 		
-		 //set up On or Off Radio button listener
-//	     addChangeListenerToRadios();
+		
+
 	     
 	    //action listener for the radio group 
 		fanRadioGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
@@ -108,8 +105,7 @@ public class MainActivity extends Activity {
 			@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				//start the async thread here 
-				//also should check the static variable which is set in service
+		
 				//FAN_CONTROL_STATUS = (fanOnRadio.isChecked())?"ON":"OFF";
 				FAN_CONTROL_STATUS = (fanOffRadio.isChecked())?"OFF":"ON";
 //				new FanControl().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -166,6 +162,16 @@ public class MainActivity extends Activity {
 
 	
 	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		IntentFilter intentFilter = new IntentFilter("CLEANING_TIME");
+		LocalBroadcastManager.getInstance(context).registerReceiver(cleanAlertReceiver, intentFilter);
+	}
+
+
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 		//setting activity is alive
@@ -199,8 +205,10 @@ public class MainActivity extends Activity {
 		intent.putExtra("ActivityLocalBroadcast", "Stop Alert");
 		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
 		
-		alertButton.setVisibility(View.GONE);
-	    
+//		alertButton.setVisibility(View.GONE);
+		alertButton.setBackgroundResource(R.drawable.circular_inactive_button);
+        alertButton.setTextColor(R.color.alert_inactive_color_text);
+		alertButton.setText(R.string.alert_inactive_button);
 		//change the ALER_STATUS
 		
 		WebService.ALERT_STATUS = false;
@@ -234,19 +242,22 @@ public class MainActivity extends Activity {
     }
 	//Local Broadcast receiver from service this should be registered in the oncreate and unregistered in onpause
 	private class CleanAlertReceiver extends BroadcastReceiver{
-
+       
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			//Actions to be done
-			Log.i("MyLog","ClearAlertReceiver in onReceive");
-			if(intent.getStringExtra("ServiceLocalBroadcast") !=null){
+			Log.i("MyLog","CleanAlertReceiver in onReceive");
+//			if(intent.getStringExtra("ServiceLocalBroadcast") !=null){
 				Log.i("MyLog","LocalBroadcast: "+intent.getStringExtra("ServiceLocalBroadcast"));
 				
 				startButton.setBackgroundColor(Color.GREEN);
-				alertButton.setVisibility(View.VISIBLE);
+				
+				alertButton.setBackgroundResource(R.drawable.circular_active_button);
+			    alertButton.setText(R.string.alert_active_button);
+			    alertButton.setTextColor(R.color.alert_active_color_text);
 //				unlockScreen();
-			   
-			}
+			  
+//			}
 					
 		}
 		

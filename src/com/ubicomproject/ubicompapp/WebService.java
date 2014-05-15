@@ -79,7 +79,6 @@ public class WebService extends Service{
 //	  
 	
 	  //starting the myAsynctask thread
-//		new MyAsynTask().execute();
 		new MyAsynTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		return startId;
 	}
@@ -252,7 +251,7 @@ public class WebService extends Service{
 			int i=0;
 			try{
 			  while(i<5){
-				Thread.sleep(4000);
+				Thread.sleep(1000);
 				
 				Log.i("MyLog","Executing in Thread");
 				i++;
@@ -269,10 +268,6 @@ public class WebService extends Service{
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
 			
-			//this is the UI thread
-			
-			//Here try to create the Activity
-			
 			Log.i("MyLog","in Post Execute UI thread");
 			
 			ALERT_STATUS = true;
@@ -284,7 +279,6 @@ public class WebService extends Service{
 		    //TODO  vibration here
 		    
 		    
-	
 		    
 		}
 
