@@ -120,14 +120,15 @@ int bool abc_config_actionMenuItemAllCaps 0x7f070005
 int bool abc_config_allowActionMenuItemTextWithIcon 0x7f070004
 int bool abc_config_showMenuShortcutsWhenKeyboardPresent 0x7f070003
 int bool abc_split_action_bar_is_narrow 0x7f070002
-int color abc_search_url_text_holo 0x7f080007
+int color abc_search_url_text_holo 0x7f080008
 int color abc_search_url_text_normal 0x7f080000
 int color abc_search_url_text_pressed 0x7f080002
 int color abc_search_url_text_selected 0x7f080001
-int color alert_active_color 0x7f080005
-int color alert_active_color_text 0x7f080006
-int color alert_inactive_color 0x7f080003
-int color alert_inactive_color_text 0x7f080004
+int color alert_active_color 0x7f080006
+int color alert_active_color_text 0x7f080007
+int color alert_inactive_color 0x7f080004
+int color alert_inactive_color_text 0x7f080005
+int color fan_color_text 0x7f080003
 int dimen abc_action_bar_default_height 0x7f090002
 int dimen abc_action_bar_icon_vertical_padding 0x7f090003
 int dimen abc_action_bar_progress_bar_size 0x7f09000a
@@ -241,6 +242,7 @@ int drawable abc_textfield_searchview_right_holo_light 0x7f020056
 int drawable circular_active_button 0x7f020057
 int drawable circular_inactive_button 0x7f020058
 int drawable ic_launcher 0x7f020059
+int drawable toilet 0x7f02005a
 int id action_bar 0x7f06001c
 int id action_bar_activity_content 0x7f060015
 int id action_bar_container 0x7f06001b
@@ -252,7 +254,6 @@ int id action_context_bar 0x7f06001d
 int id action_menu_divider 0x7f060016
 int id action_menu_presenter 0x7f060017
 int id action_mode_close_button 0x7f060024
-int id action_settings 0x7f060043
 int id activity_chooser_view_content 0x7f060025
 int id alertButton 0x7f060042
 int id always 0x7f06000b
@@ -278,6 +279,7 @@ int id ifRoom 0x7f06000a
 int id image 0x7f060027
 int id listMode 0x7f060001
 int id list_item 0x7f060029
+int id menu_toilet_cleaned 0x7f060043
 int id middle 0x7f060012
 int id never 0x7f060009
 int id none 0x7f060010
@@ -360,6 +362,7 @@ int string off_text 0x7f0b0011
 int string on_text 0x7f0b0010
 int string start_service 0x7f0b0012
 int string stop_service 0x7f0b0013
+int string toilet_cleaned_menu_item 0x7f0b0016
 int style AppBaseTheme 0x7f0c008b
 int style AppTheme 0x7f0c008c
 int style TextAppearance_AppCompat_Base_CompactMenu_Dialog 0x7f0c0063

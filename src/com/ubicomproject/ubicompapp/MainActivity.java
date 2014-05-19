@@ -55,9 +55,13 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	private String serverFanControlURL = "http://192.168.0.240/cgi-bin/gateway.py";
+	private String SERVER_URL = "http://192.168.0.240/cgi-bin/gateway.py";
 	
 	private String FAN_CONTROL_STATUS = "OFF";
+	
+	private String TOILET_CLEANED_MESSAGE = "CLEANED";
+	
+	private boolean ALERT_RECEIVED = false;
 	
 	public static boolean ACTIVITY_IS_ALIVE;
 	
@@ -108,34 +112,44 @@ public class MainActivity extends Activity {
 		
 				//FAN_CONTROL_STATUS = (fanOnRadio.isChecked())?"ON":"OFF";
 				FAN_CONTROL_STATUS = (fanOffRadio.isChecked())?"OFF":"ON";
-//				new FanControl().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-//				new FanControl().execute();
 				
-				//addChangeListenerToRadios();
+//				String fanControlMessage = FAN_CONTROL_STATUS;				
+//				JSONObject jsonData = new JSONObject();	
+//				try {
+//					jsonData.put("fanControlMessage", fanControlMessage);
+//					jsonData.put("requestType", "FAN");
+//				} catch (JSONException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+				
+//				new SendStatusToServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,jsonData);
+//				new SendStatusToServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,FAN_CONTROL_STATUS);
+
+
 			}
 		});
 	     
 		//action listeners for start button
 		startButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				Log.i("MyLog","in startButton action Listener");
-				
+
 				Intent startServiceIntent = new Intent(getApplicationContext(),WebService.class);
-				
+
 				//pass message in intent
-				
+
 				startServiceIntent.putExtra("MessageFromActivity", "Service Started");
-				
+
 				startService(startServiceIntent);
 			}
 		});
-	
+
 		//action listeners for stop button
 		stopButton.setOnClickListener(new View.OnClickListener() {
-					
+
 			@Override
 			public void onClick(View v) {
 				Log.i("MyLog","trying to stop servicer");
@@ -144,14 +158,11 @@ public class MainActivity extends Activity {
 
 			}
 		});
-		
+
 		alertButton.setOnClickListener(new View.OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
-				//here stop the music player
-				//stop vibration 
-				//hide the button itself
 				
 				stopAlert();
 				
@@ -163,38 +174,25 @@ public class MainActivity extends Activity {
 	
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
 		IntentFilter intentFilter = new IntentFilter("CLEANING_TIME");
 		LocalBroadcastManager.getInstance(context).registerReceiver(cleanAlertReceiver, intentFilter);
 	}
 
 
-
 	@Override
 	protected void onResume() {
 		super.onResume();
-		//setting activity is alive
 		ACTIVITY_IS_ALIVE = true;
 		
-//		//just checking
-//		if(this.getIntent().getStringExtra("MessageFromService") !=null){
-//			Log.i("MyLog","Service starting new Activity"+this.getIntent().getStringExtra("MessageFromService"));
-//			
-//			startButton.setBackgroundColor(Color.GREEN);
-//			alertButton.setVisibility(View.VISIBLE);
-//		}
 	}
    
-	
 	
 	@Override
 	protected void onPause() {
 		super.onPause();
-		//stopAlert();
-		// setting activity alive to false
+		stopAlert();
 		ACTIVITY_IS_ALIVE = false;
-		
 		LocalBroadcastManager.getInstance(context).unregisterReceiver(cleanAlertReceiver);
 
 	}
@@ -204,33 +202,55 @@ public class MainActivity extends Activity {
 		Intent intent = new Intent("STOP_ALERT");
 		intent.putExtra("ActivityLocalBroadcast", "Stop Alert");
 		LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-		
-//		alertButton.setVisibility(View.GONE);
-		alertButton.setBackgroundResource(R.drawable.circular_inactive_button);
-        alertButton.setTextColor(R.color.alert_inactive_color_text);
-		alertButton.setText(R.string.alert_inactive_button);
-		//change the ALER_STATUS
-		
+		ALERT_RECEIVED = false;
+		setAlertButton();
+			
 		WebService.ALERT_STATUS = false;
     }
-
+    
+    private void setAlertButton(){
+    	if(ALERT_RECEIVED){
+    		alertButton.setBackgroundResource(R.drawable.circular_active_button);
+		    alertButton.setText(R.string.alert_active_button);
+		    alertButton.setTextColor(R.color.alert_active_color_text);
+    	}else{
+    		alertButton.setBackgroundResource(R.drawable.circular_inactive_button);
+            alertButton.setTextColor(R.color.alert_inactive_color_text);
+    		alertButton.setText(R.string.alert_inactive_button);
+    	}
+    	
+    }
+    
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
+	
+		switch(item.getItemId()){
+		
+			case R.id.menu_toilet_cleaned:
+				Toast.makeText(this,"Toilet Cleaned", Toast.LENGTH_LONG).show();
+				
+				
+//				JSONObject jsonData = new JSONObject();	
+//				try {
+//					jsonData.put("toiletCleanStatus", "CLEANED_MESSAGE");
+//					jsonData.put("toiletCleanMessage", TOILET_CLEANED_MESSAGE);				
+//				} catch (JSONException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}		
+				
+//				new SendStatusToServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,TOILET_CLEANED_MESSAGE);
+				
+			    return true;
 		}
+		
 		return super.onOptionsItemSelected(item);
 	}
 	
@@ -251,20 +271,15 @@ public class MainActivity extends Activity {
 				Log.i("MyLog","LocalBroadcast: "+intent.getStringExtra("ServiceLocalBroadcast"));
 				
 				startButton.setBackgroundColor(Color.GREEN);
-				
-				alertButton.setBackgroundResource(R.drawable.circular_active_button);
-			    alertButton.setText(R.string.alert_active_button);
-			    alertButton.setTextColor(R.color.alert_active_color_text);
-//				unlockScreen();
-			  
-//			}
-					
+				ALERT_RECEIVED = true;
+				setAlertButton();
+			    			  					
 		}
 		
 	}
 	
 	//http send radio button status
-	private class FanControl extends AsyncTask<String , String , String>{
+	private class SendStatusToServer extends AsyncTask<String , String , String>{
        
 		private ProgressDialog dialog;
 		@Override
@@ -286,24 +301,24 @@ public class MainActivity extends Activity {
 			Log.i("MyLog","Trying to set Radio button status");
 			
 			//send	status to server
-			String result = SendFanControlMessage();
+			String result = SendFanControlMessage(params[0]);
 			return result;
 		}
 		
 		
-		private String SendFanControlMessage(){
+		private String SendFanControlMessage(String clientMessage){
 			    String postResult = null;
 				try {
 				
 					Thread.sleep(1000);
 					
-					//name should correspond to db name
-					String fanControlMessage = FAN_CONTROL_STATUS;
-//					String data = URLEncoder.encode("fanControlMessage","UTF-8") +  URLEncoder.encode(fanControlMessage,"UTF-8");
-					
+//					//name should correspond to db name
+//					String fanControlMessage = FAN_CONTROL_STATUS;
+////					String data = URLEncoder.encode("fanControlMessage","UTF-8") +  URLEncoder.encode(fanControlMessage,"UTF-8");
+//					
 					JSONObject jsonData = new JSONObject();	
-					jsonData.put("fanControlMessage", fanControlMessage);
-					jsonData.put("requestType", "FAN");
+					jsonData.put("clientMessage", clientMessage);
+					jsonData.put("requestType", "CLIENT");
 					
 //					List<NameValuePair> data = new ArrayList<NameValuePair> ();
 //					
@@ -312,7 +327,7 @@ public class MainActivity extends Activity {
 						
 					DefaultHttpClient httpClient = new DefaultHttpClient(new BasicHttpParams());
 					//postmethod
-					HttpPost httpPost = new HttpPost(serverFanControlURL);
+					HttpPost httpPost = new HttpPost(SERVER_URL);
 					httpPost.setHeader("Content-type","application/json");
 					
 					httpPost.setEntity(new  StringEntity(jsonData.toString()));
@@ -340,6 +355,7 @@ public class MainActivity extends Activity {
 					result = stringBuilder.toString();
 					if(inputStream != null)inputStream.close();
 					
+//					HERE check the returned json data ....check the key value
 					JSONObject jsonObject;
 					
 					jsonObject = new JSONObject(result);

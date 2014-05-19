@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,6 +26,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
@@ -70,7 +73,17 @@ public class WebService extends Service{
 		IntentFilter intentFilter = new IntentFilter("STOP_ALERT");
 		LocalBroadcastManager.getInstance(context).registerReceiver(stopAlertReceiver, intentFilter);
 		
-		mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+		Uri mediaSource = Uri.parse("android.resource://"+context.getPackageName()+R.raw.alert);
+		mediaPlayer = new MediaPlayer();
+		try {
+			mediaPlayer.setDataSource(context,mediaSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		//mediaPlayer.setOnPreparedListener((OnPreparedListener) this);
+		mediaPlayer.prepareAsync();
+		
 		//starting the serverconnection thread
 //	    serverConnection =new ServerConnection();
 //	    serverConnection.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -88,8 +101,8 @@ public class WebService extends Service{
 		Log.i("MyLog","In Service onDestroy");
 		super.onDestroy();
 		serverConnection.cancel(true);
-		
-		
+		mediaPlayer.stop();
+		mediaPlayer.release();
 	}
 	
 	private class ServerConnection extends AsyncTask<String,String,String>{
@@ -246,6 +259,13 @@ public class WebService extends Service{
 	// The separate thread
 	//params: first: what is passed  second:for update third: the returned
 	private class MyAsynTask extends AsyncTask<String,String,String>{
+
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+		}
 
 		protected String doInBackground(String... params) {
 			int i=0;

@@ -40,13 +40,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="@string/on_text" />
+            android:text="@string/on_text" 
+            android:textSize="24sp"
+            android:textColor="@color/fan_color_text" />
 
         <RadioButton
             android:id="@+id/fanOffRadio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/off_text" />
+            android:text="@string/off_text" 
+            android:textSize="24sp"
+            android:textColor="@color/fan_color_text" />
     </RadioGroup>
 
     <TextView
@@ -56,7 +60,9 @@
         android:layout_alignBottom="@+id/fanRadioGroup"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="33dp"
-        android:text="@string/fan_text" />
+        android:text="@string/fan_text" 
+        android:textSize="32sp"
+        android:textColor="@color/fan_color_text"/>
 
     <Button
         android:id="@+id/alertButton"
