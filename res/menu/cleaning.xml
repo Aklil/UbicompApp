@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.ubicomproject.ubicompapp.CleaningActivity">
+      
+     <item android:id ="@+id/menu_toilet_cleaned"
+           android:title="@string/toilet_cleaned_menu_item"/>
+</menu>

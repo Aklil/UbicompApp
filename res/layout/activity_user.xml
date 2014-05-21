@@ -1,0 +1,88 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#162316"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.ubicomproject.ubicompapp.UserActivity$PlaceholderFragment" >
+    <RadioGroup
+        android:id="@+id/userFanRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/userFanTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/userFanOnRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/on_text"
+            android:textColor="@color/fan_color_text"
+            android:textSize="26sp" />
+
+        <RadioButton
+            android:id="@+id/userFanOffRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/off_text"
+            android:textColor="@color/fan_color_text"
+            android:textSize="26sp" />
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/userFanTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="76dp"
+        android:text="@string/fan_text"
+        android:textColor="@color/fan_color_text"
+        android:textSize="32sp" />
+
+    <RadioGroup
+        android:id="@+id/userHeaterRadioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userFanRadioGroup"
+        android:layout_below="@+id/userHeaterTextView"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/userHeaterOnRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/on_text"
+            android:textColor="@color/fan_color_text"
+            android:textSize="26sp" />
+
+        <RadioButton
+            android:id="@+id/userHeaterOffRadio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/off_text"
+            android:textColor="@color/fan_color_text"
+            android:textSize="26sp" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/userHeaterTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/userFanTextView"
+        android:layout_centerVertical="true"
+        android:text="@string/heater_text"
+        android:textColor="@color/fan_color_text"
+        android:textSize="32sp" />
+
+</RelativeLayout>

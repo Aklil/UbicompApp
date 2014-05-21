@@ -7,9 +7,12 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="19" />
-    
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL"></uses-permission>
+
+    <uses-permission android:name="android.permission.INTERNET" >
+    </uses-permission>
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" >
+    </uses-permission>
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -25,8 +28,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".WebService">
+
+        <service android:name="com.ubicomproject.ubicompapp.WebService" >
         </service>
+
+        <activity
+            android:name="com.ubicomproject.ubicompapp.CleaningActivity"
+            android:label="@string/title_activity_cleaning"
+            android:parentActivityName="com.ubicomproject.ubicompapp.MainActivity"
+            android:screenOrientation="sensorPortrait" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ubicomproject.ubicompapp.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.ubicomproject.ubicompapp.UserActivity"
+            android:label="@string/title_activity_user" >
+        </activity>
     </application>
 
 </manifest>

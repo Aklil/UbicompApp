@@ -4,12 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -24,7 +24,7 @@ import android.content.Context;
 //import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
+import android.hardware.Camera.PreviewCallback;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
@@ -33,16 +33,26 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.View;
+
 
 public class WebService extends Service{
 
+   private static final String TAG = "MyLog";
    public static boolean ALERT_STATUS = false;   // to check alert button 
    private ServerConnection serverConnection;
-   static String serverUrl = "http://192.168.0.240/cgi-bin/gateway.py";
+   static String serverUrl = "http://192.169.1.102/cgi-bin/gateway.py";
+   private boolean MEDIA_PLAYER_DATA_SOURCE_SETTED = false;
+   private boolean MEDIA_PLAYER_PREPARED = false;
+   private boolean MEDIA_PLAYER_STARTED = false;
    private Context context;
    private StopAlertReceiver stopAlertReceiver;
-   private MediaPlayer mediaPlayer;
+   
+   private MyAsynTask myAsynTask ;
+   private final ReentrantLock lock = new ReentrantLock();
+   private final Condition tryAgain = lock.newCondition();
+   
+   private MediaPlayer mediaPlayer = new MediaPlayer();;
+
    
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -55,16 +65,19 @@ public class WebService extends Service{
 	public void onCreate() {
 		super.onCreate();
 		
-		Log.i("MyLog","In Service onCreate");
-		
+		Log.i(TAG,"In Service onCreate");
+
 	}
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i("MyLog","In Service onStartCommand");
-		//Log.i("MyLog","Logging intent extra message"+intent.getStringExtra("MessageFromActivity"));
-		Log.i("MyLog","Logging intent in onStartCommand"+intent.toString());
+		Log.i(TAG,"In Service onStartCommand");
+		//Log.i(TAG,"Logging intent extra message"+intent.getStringExtra("MessageFromActivity"));
+		if(intent!=null){
+			Log.i(TAG,"Logging intent in onStartCommand"+intent.toString());
+
+		}
 		 
 		context = this;
 		
@@ -72,39 +85,75 @@ public class WebService extends Service{
 		stopAlertReceiver = new StopAlertReceiver();
 		IntentFilter intentFilter = new IntentFilter("STOP_ALERT");
 		LocalBroadcastManager.getInstance(context).registerReceiver(stopAlertReceiver, intentFilter);
-		
-		Uri mediaSource = Uri.parse("android.resource://"+context.getPackageName()+R.raw.alert);
-		mediaPlayer = new MediaPlayer();
-		try {
-			mediaPlayer.setDataSource(context,mediaSource);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		//mediaPlayer.setOnPreparedListener((OnPreparedListener) this);
-		mediaPlayer.prepareAsync();
+//		if(!MEDIA_PLAYER_DATA_SOURCE_SETTED) setMediaDataSource();
+		if(!MEDIA_PLAYER_PREPARED)prepareMediaPlayer();
 		
 		//starting the serverconnection thread
-//	    serverConnection =new ServerConnection();
-//	    serverConnection.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-//		serverConnection.execute();
-//		return startId;
-//	  
+	    serverConnection =new ServerConnection();
+	    serverConnection.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		return startId;
+	  
 	
 	  //starting the myAsynctask thread
-		new MyAsynTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		return startId;
+		
+		
+//		new MyAsynTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+//		Log.i(TAG,"new thread initialized");
+		
+//		return startId;
 	}
 
 	@Override
 	public void onDestroy() {
-		Log.i("MyLog","In Service onDestroy");
+		Log.i(TAG,"In Service onDestroy");
 		super.onDestroy();
 		serverConnection.cancel(true);
 		mediaPlayer.stop();
+		mediaPlayer.reset();
 		mediaPlayer.release();
+		mediaPlayer = null;
+		MEDIA_PLAYER_DATA_SOURCE_SETTED = false;
+		LocalBroadcastManager.getInstance(context).unregisterReceiver(stopAlertReceiver);
 	}
-	
+	private void setMediaDataSource(){
+		try {
+			Uri mediaSource = Uri.parse("android.resource://"+context.getPackageName()+"/"+R.raw.alert);
+//	        String url = "http://www.brothershouse.narod.ru/music/pepe_link_-_guitar_vibe_113_club_mix.mp3"; // your URL here
+			mediaPlayer.setDataSource(context, mediaSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		 MEDIA_PLAYER_DATA_SOURCE_SETTED = true;
+	}
+	private void prepareMediaPlayer(){
+		
+		try {
+			Uri mediaSource = Uri.parse("android.resource://"+context.getPackageName()+"/"+R.raw.alert);
+//	        String url = "http://www.brothershouse.narod.ru/music/pepe_link_-_guitar_vibe_113_club_mix.mp3"; // your URL here
+			mediaPlayer.setDataSource(context, mediaSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		
+		try {
+			mediaPlayer.prepareAsync();
+		} catch (IllegalStateException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+            @Override
+            public void onPrepared(MediaPlayer player) {
+            	MEDIA_PLAYER_PREPARED = true;
+            	Log.i(TAG,"Media player prepared");
+            }
+
+        });
+	}
 	private class ServerConnection extends AsyncTask<String,String,String>{
 		
 		@Override
@@ -114,33 +163,29 @@ public class WebService extends Service{
 
 		@Override
 		protected String doInBackground(String... params) {
-			//Here an http request is done for the server data and if the number of toilet users reach the maximum number of users
-			//if max number reaches notify the activity with an alarm sound, vibration and change the UI
-			
-			//server is checked in 2 mins interval but here simulate with seconds
 		
+//			mediaPlayer = MediaPlayer.create(context, R.raw.alert);
 			while(true){
 				try {
 					if(this.isCancelled()){
-						
+						Log.i(TAG,"Thread cancelled");
 						break;
 					}
-					Thread.sleep(10000);
+					Thread.sleep(5000);
 					
 					DefaultHttpClient httpClient = new DefaultHttpClient(new BasicHttpParams());
 					//postmethod
 					HttpPost httpPost = new HttpPost(serverUrl);
 					
-					//getmethod
-					HttpGet httpGet = new HttpGet(serverUrl);
+					Log.i(TAG,"Trying to make connection to server");
 					
 					//for json data??
 					httpPost.setHeader("Content-type","application/json");
 					
 					
 				    JSONObject jsonRequestData = new JSONObject();	
-				 
-				    jsonRequestData.put("requestType", "CLEAN");
+				    jsonRequestData.put("requestType", "CLIENT");
+				    jsonRequestData.put("clientMessage", "CLEAN");
 					httpPost.setEntity(new  StringEntity(jsonRequestData.toString()));
 					
 					HttpResponse response = httpClient.execute(httpPost);
@@ -161,7 +206,7 @@ public class WebService extends Service{
 						stringBuilder.append(line+"\n");
 					}
 					result = stringBuilder.toString();
-					Log.i("MyLog","result before json"+result);
+					Log.i(TAG,"result before json"+result);
 					if(inputStream != null)inputStream.close();
 					
 					//the code below assumes data is in json format : json parser
@@ -172,13 +217,13 @@ public class WebService extends Service{
 					//get the json string
 					String statusString = statusJSONObject.getString("clean");
 					
-					Log.i("MyLog","result after json"+statusString);
+					Log.i(TAG,"result after json"+statusString);
 
 					//Here check the requested value
 					if(statusString.equals("YES")){
 						
 						//notify user
-						
+						ALERT_STATUS = true;
 						notifyUser();
 					}
 					
@@ -205,12 +250,22 @@ public class WebService extends Service{
 	private void notifyUser(){
 		//change activity UI 
 		//start media player and vibration 
-		Log.i("MyLog","In notify User");
+		Log.i(TAG,"In notify User");
 		String newActivityStarted = null;
 		//first check if Activity is on resume or onpause
-		if(MainActivity.ACTIVITY_IS_ALIVE){
+		if(CleaningActivity.CLEANING_ACTIVITY_IS_ALIVE){
 			//send localbroadcast
 			sendLocalBroadCast();
+		}
+		else if(MainActivity.MAIN_ACTIVITY_IS_ALIVE){
+			Log.i(TAG,"Main Activity is Alive");
+			if(!MEDIA_PLAYER_PREPARED)prepareMediaPlayer();
+			sendLocalBroadCast();
+			Intent intent = new Intent(context, CleaningActivity.class);
+		    intent.setAction(Intent.ACTION_VIEW);
+		    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
+		    startActivity(intent);
+			
 		}
 		else{
 			//create a new activity
@@ -219,25 +274,26 @@ public class WebService extends Service{
 			sendLocalBroadCast();	
 		}	
 	    //start media player
+	   while(!MEDIA_PLAYER_PREPARED){Log.i(TAG,"Media player not prepared in the while loop");}
 	   mediaPlayer.setLooping(true); // Set looping 
 	   mediaPlayer.setVolume(100,100); 
   	   mediaPlayer.start();
-	    
+  	   MEDIA_PLAYER_STARTED = true;
 	}
 	private void startNewActivity(String newActivityStarted){
 		//create a new activity
-		Log.i("MyLog","Service trying to start new activity");
-		Intent intent = new Intent(context, MainActivity.class);
+		Log.i(TAG,"Service trying to start new activity");
+		Intent intent = new Intent(context, CleaningActivity.class);
 	    intent.setAction(Intent.ACTION_VIEW);
 	    //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TOP);	
-	    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
 	    newActivityStarted = "New Activity Started";
 	    intent.putExtra("MessageFromService",newActivityStarted);
-	    getApplicationContext().startActivity(intent);
+	    startActivity(intent);
 	}
 	private void sendLocalBroadCast(){
 		//send localbroadcast
-		Log.i("MyLog","Service trying to send local broadcast message");
+		Log.i(TAG,"Service trying to send local broadcast message");
 
 		Intent intent = new Intent("CLEANING_TIME");
 		intent.putExtra("ServiceLocalBroadcast", "cleaning time");
@@ -248,11 +304,26 @@ public class WebService extends Service{
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			//Actions to be done
-			Log.i("MyLog","StopAlertReceiver in onReceive");
-			Log.i("MyLog","LocalBroadcast: "+intent.getStringExtra("ServiceLocalBroadcast"));
+			Log.i(TAG,"StopAlertReceiver in onReceive");
+			if(intent.getStringExtra("ActivityLocalBroadcast") !=null){
+				Log.i(TAG,"LocalBroadcast: "+intent.getStringExtra("ActivityLocalBroadcast"));
+				
+				if( MEDIA_PLAYER_STARTED){
+					
+					Log.i(TAG,"Stopping Media player already started");
+					mediaPlayer.stop();
+					mediaPlayer.reset();
+					prepareMediaPlayer();
+//					mediaPlayer.release();
+//					mediaPlayer = null;
+					MEDIA_PLAYER_PREPARED = false;
+					//mediaPlayer.release();
+					MEDIA_PLAYER_STARTED=false;
+					
+				}
+				
+			}
 			
-			mediaPlayer.stop();
-			//mediaPlayer.release();		
 		}
 		
 	}
@@ -264,23 +335,40 @@ public class WebService extends Service{
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			mediaPlayer = MediaPlayer.create(context, R.raw.alert);
+			
 		}
 
 		protected String doInBackground(String... params) {
+			try {
+				lock.lockInterruptibly();
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			if(this.isCancelled()){
+				
+				return null;
+			}
 			int i=0;
 			try{
 			  while(i<5){
 				Thread.sleep(1000);
 				
-				Log.i("MyLog","Executing in Thread");
+				Log.i(TAG,"Executing in Thread");
 				i++;
 			  }
 			}catch(Exception e){
-				Log.i("MyLog","Exception Occured in MyAsyncTask"+e.toString());
+				Log.i(TAG,"Exception Occured in MyAsyncTask"+e.toString());
 			}
 			
-			
+		
+//			try {
+//				tryAgain.await();
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+		    lock.unlock();
 			return null;
 		}
 		
@@ -288,18 +376,26 @@ public class WebService extends Service{
 		protected void onPostExecute(String result) {
 			super.onPostExecute(result);
 			
-			Log.i("MyLog","in Post Execute UI thread");
+			Log.i(TAG,"in Post Execute UI thread");
 			
 			ALERT_STATUS = true;
 		    
 			notifyUser();
 		    
-		 
+			this.cancel(true);
 		    
 		    //TODO  vibration here
 		    
 		    
 		    
+		}
+
+		@Override
+		protected void onCancelled() {
+			// TODO Auto-generated method stub
+			super.onCancelled();
+			
+			Log.i(TAG,"Thread Cancelled");
 		}
 
 	}
