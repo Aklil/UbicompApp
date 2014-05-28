@@ -113,7 +113,7 @@ public class CleaningActivity extends Activity {
 //		startWebService();
 		//hide alertButton 
 		if(!WebService.ALERT_STATUS){
-//			alertButton.setVisibility(View.INVISIBLE);
+
 		}
 		CLEANING_ACTIVITY_IS_ALIVE = true;
 		//registered alert receiver
@@ -153,7 +153,7 @@ public class CleaningActivity extends Activity {
 			}
 		});
 	     
-//		//action listeners for start button
+//		//action listeners for start button : a dummy button for testing
 //		startButton.setOnClickListener(new View.OnClickListener() {
 //
 //			@Override
@@ -271,7 +271,6 @@ public class CleaningActivity extends Activity {
 		switch(item.getItemId()){
 		  
 			case R.id.menu_toilet_cleaned:
-				Toast.makeText(this,"Toilet Cleaned", Toast.LENGTH_LONG).show();
 				 Log.i(TAG,"in options selected switch statement");
 				new SendStatusToServer().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,TOILET_CLEANED_MESSAGE);
 				

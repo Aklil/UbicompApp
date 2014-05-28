@@ -22,7 +22,6 @@
             android:id="@+id/fanOnRadio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="@string/on_text"
             android:textColor="@color/fan_color_text"
             android:textSize="24sp" />
@@ -31,6 +30,7 @@
             android:id="@+id/fanOffRadio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/off_text"
             android:textColor="@color/fan_color_text"
             android:textSize="24sp" />
@@ -98,7 +98,6 @@
             android1:id="@+id/heaterOnRadio"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
-            android1:checked="true"
             android1:text="@string/on_text"
             android1:textColor="@color/fan_color_text"
             android1:textSize="24sp" />
@@ -107,6 +106,7 @@
             android1:id="@+id/heaterOffRadio"
             android1:layout_width="wrap_content"
             android1:layout_height="wrap_content"
+            android1:checked="true"
             android1:text="@string/off_text"
             android1:textColor="@color/fan_color_text"
             android1:textSize="24sp" />

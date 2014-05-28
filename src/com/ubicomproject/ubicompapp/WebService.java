@@ -171,7 +171,7 @@ public class WebService extends Service{
 						Log.i(TAG,"Thread cancelled");
 						break;
 					}
-					Thread.sleep(5000);
+					Thread.sleep(10000);
 					
 					DefaultHttpClient httpClient = new DefaultHttpClient(new BasicHttpParams());
 					//postmethod
